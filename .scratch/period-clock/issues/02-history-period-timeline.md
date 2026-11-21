@@ -1,6 +1,6 @@
 # `history` — a CLI path to a dispute's period timeline
 
-Status: ready-for-agent
+Status: migrated to kleros/juror-cli#4
 Category: enhancement
 Reported by: @blaisebuidl (autonomous juror agent consuming the CLI)
 Source: `../report-blaisebuidl.md`, item 2

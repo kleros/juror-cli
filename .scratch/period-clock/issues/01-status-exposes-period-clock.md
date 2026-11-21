@@ -1,6 +1,6 @@
 # `status` exposes the period clock, not just the derived deadline
 
-Status: ready-for-agent
+Status: migrated to kleros/juror-cli#3
 Category: enhancement
 Reported by: @blaisebuidl (autonomous juror agent consuming the CLI)
 Source: `../report-blaisebuidl.md`, item 1

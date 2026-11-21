@@ -1,6 +1,6 @@
 # Document the period-clock invariant, not just the early-exit hazard
 
-Status: ready-for-agent
+Status: migrated to kleros/juror-cli#5
 Category: enhancement
 Reported by: @blaisebuidl (autonomous juror agent consuming the CLI)
 Source: `../report-blaisebuidl.md`, item 3

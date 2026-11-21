@@ -1,6 +1,6 @@
 # Alias testnet/devnet deployment modules to stubs at build time
 
-Status: ready-for-agent
+Status: migrated to kleros/juror-cli#6
 
 ## Problem
 
