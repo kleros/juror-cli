@@ -87,8 +87,8 @@ vitest, biome and the contracts package with its ethers v5.
 <summary>From source, to hack on it</summary>
 
 ```bash
-git clone https://github.com/kleros/kleros-juror-cli.git
-cd kleros-juror-cli
+git clone https://github.com/kleros/juror-cli.git
+cd juror-cli
 pnpm install
 pnpm build
 pnpm link --global

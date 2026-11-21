@@ -6,10 +6,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kleros/kleros-juror-cli.git"
+    "url": "git+https://github.com/kleros/juror-cli.git"
   },
-  "homepage": "https://github.com/kleros/kleros-juror-cli#readme",
-  "bugs": "https://github.com/kleros/kleros-juror-cli/issues",
+  "homepage": "https://github.com/kleros/juror-cli#readme",
+  "bugs": "https://github.com/kleros/juror-cli/issues",
   "keywords": [
     "kleros",
     "arbitration",
