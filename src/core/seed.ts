@@ -10,6 +10,10 @@ import { err, type KlerosResult, ok } from "./result.js";
  *
  * Changing this message, the signer, or the seed source strands every commitment
  * still in flight, because the salt changes and the reveal can no longer match.
+ *
+ * It is a domain-separation tag, NOT the package name. The package was renamed to
+ * `@kleros/juror-cli`; this string deliberately was not. Exclude it from any
+ * find-and-replace of the old name. `seed.test.ts` pins it with a fixed-key vector.
  */
 export const SEED_MESSAGE = "kleros-juror-cli/v1/seed";
 

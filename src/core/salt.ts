@@ -7,6 +7,10 @@ import type { Address } from "viem";
  * Bumping this tag is a breaking change: any commitment still in flight was made
  * with the old one and can only be revealed with the old one, so a future version
  * MUST retain the ability to derive v1 salts.
+ *
+ * It is a domain-separation tag, NOT the package name. The package was renamed to
+ * `@kleros/juror-cli`; this string deliberately was not. Exclude it from any
+ * find-and-replace of the old name. `salt.test.ts` pins it via the `02 §9` vectors.
  */
 export const SALT_VERSION_TAG = "kleros-juror-cli/v1/salt";
 

@@ -1,4 +1,4 @@
-import { keccak256 } from "viem";
+import { hexToBytes, keccak256 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it, vi } from "vitest";
 import { deriveSeedFromSigner, SEED_MESSAGE, seedFromEnv } from "./seed.js";
@@ -16,6 +16,21 @@ describe("deriveSeedFromSigner", () => {
 
     expect(result.data).toHaveLength(32);
     expect(result.data).toEqual(keccak256(await sign(SEED_MESSAGE), "bytes"));
+  });
+
+  it("pins the seed message and the seed it yields for a fixed key", async () => {
+    // Every other test here uses SEED_MESSAGE by reference, so renaming it would pass
+    // them all while stranding every in-flight commitment. This is the only literal.
+    // The string predates the rename to `@kleros/juror-cli` and MUST NOT follow it.
+    expect(SEED_MESSAGE).toBe("kleros-juror-cli/v1/seed");
+
+    const account = privateKeyToAccount(TEST_KEY);
+    const result = await deriveSeedFromSigner((message) => account.signMessage({ message }));
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data).toEqual(
+      hexToBytes("0x50a07a5a9f39ad75a8c835902c4aa7342888040e5afa3d4d2e7c1d4c03ed8232"),
+    );
   });
 
   it("reproduces the same seed across independent invocations", async () => {

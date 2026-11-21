@@ -1,9 +1,9 @@
-<h1 align="center">⚖️ kleros-juror-cli</h1>
+<h1 align="center">⚖️ @kleros/juror-cli</h1>
 
 <p align="center">
   <strong>A headless CLI that commits and reveals Kleros v2 juror votes on Arbitrum One.</strong><br>
   One-shot commands, no daemon, JSON in and JSON out.<br>
-  <sub>package <code>kleros-juror-cli</code> · binary <code>kleros-juror</code></sub>
+  <sub>package <code>@kleros/juror-cli</code> · binary <code>kleros-juror</code></sub>
 </p>
 
 <p align="center">
@@ -76,7 +76,7 @@ been broadcast from it in production**. Treat the first live vote as the shakedo
 ## Install
 
 ```bash
-npm install -g kleros-juror-cli      # puts `kleros-juror` on your PATH
+npm install -g @kleros/juror-cli     # puts `kleros-juror` on your PATH
 ```
 
 That is the right install for a server: 22 packages, the built CLI plus what `incur` and `viem`
@@ -87,7 +87,7 @@ vitest, biome and the contracts package with its ethers v5.
 <summary>From source, to hack on it</summary>
 
 ```bash
-git clone https://github.com/jaybuidl/kleros-juror-cli.git
+git clone https://github.com/kleros/kleros-juror-cli.git
 cd kleros-juror-cli
 pnpm install
 pnpm build
@@ -147,6 +147,10 @@ info   = "kleros-juror-cli/v1/salt|chain=42161|dk=<kit>|dispute=<id>|round=<n>|v
 salt   = uint256( HMAC-SHA256(key = seed, message = info) )
 commit = keccak256( abi.encodePacked(uint256 choice, uint256 salt) )
 ```
+
+The `kleros-juror-cli/v1/…` prefixes are fixed domain-separation tags, not the package name: they
+predate the rename to `@kleros/juror-cli` and never change, since a different tag yields a
+different salt and an unrevealable vote.
 
 `<csv>` is the **canonical** vote ID list: deduplicated, sorted *numerically* ascending, decimal,
 comma-joined. The same canonical array is what goes on chain, so the two can never diverge. (A
@@ -281,7 +285,7 @@ The framework-free core is also importable as a library, if you would rather bui
 yourself than shell out:
 
 ```ts
-import { canonicaliseVoteIds, deriveSalt, hashVote, checkPreflight } from "kleros-juror-cli";
+import { canonicaliseVoteIds, deriveSalt, hashVote, checkPreflight } from "@kleros/juror-cli";
 ```
 
 Everything under `src/core/` is free of CLI concerns and returns a `KlerosResult<T>`; `src/commands/`
