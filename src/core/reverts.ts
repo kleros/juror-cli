@@ -1,11 +1,11 @@
 import { BaseError, ContractFunctionRevertedError } from "viem";
 
 /**
- * Revert reason to operator guidance — `04 §5`.
+ * Revert reason to operator guidance.
  *
  * The deployed implementation reverts with `require` strings, so `Error(string)`
  * is the primary path. Custom error names are mapped too, because the next
- * implementation upgrade replaces the strings with them (`01 §2`) and decoding
+ * implementation upgrade replaces the strings with them and decoding
  * should keep working without a code change.
  */
 const BY_REASON: Record<string, string> = {
@@ -76,7 +76,7 @@ export function decodeRevert(error: unknown): DecodedRevert {
     if (name) return { reason: name, guidance: `The contract reverted with ${name}.` };
   }
 
-  // An out-of-range vote ID panics rather than reverting readably (`01 §4`).
+  // An out-of-range vote ID panics rather than reverting readably.
   if (error.message.includes("0x32") || error.message.toLowerCase().includes("out-of-bounds")) {
     return {
       reason: "panic 0x32",

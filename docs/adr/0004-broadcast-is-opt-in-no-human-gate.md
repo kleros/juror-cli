@@ -1,11 +1,11 @@
 # Broadcast is opt-in, and there is no human confirmation gate
 
-`03 §7` requires an interactive confirmation before every write, skipped when stdin is not a TTY.
-The primary consumer is an autonomous agent, so that gate never fires — and the paths it runs under
-supply nothing in its place. OpenClaw's `command`-payload cron "executes inside the Gateway process
-as admin-authored automation" and is explicitly not governed by the agent's exec-approval policy;
-on the interactive exec path, a single `allow-always` writes a persistent allowlist entry keyed on
-the resolved binary path and permanently disarms the prompt.
+The original (now retired) spec required an interactive confirmation before every write, skipped
+when stdin is not a TTY. The primary consumer is an autonomous agent, so that gate never fires — and
+the paths it runs under supply nothing in its place. OpenClaw's `command`-payload cron "executes
+inside the Gateway process as admin-authored automation" and is explicitly not governed by the
+agent's exec-approval policy; on the interactive exec path, a single `allow-always` writes a
+persistent allowlist entry keyed on the resolved binary path and permanently disarms the prompt.
 
 The gate therefore lives inside the tool:
 

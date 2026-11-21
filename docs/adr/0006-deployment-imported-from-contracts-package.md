@@ -8,16 +8,16 @@ asks `getDisputeKitsViem` which kit is which.
 
 ## Why ADR-0005's argument does not hold
 
-ADR-0005 rests on `01 §2`: bind to the **deployed** ABI, never one compiled from `master`. That
-requirement is real and unchanged. What ADR-0005 got wrong is the conclusion that a package import
-must therefore be avoided — the package ships the deployed artifacts, not `master`. The proof is
-the test ADR-0005 itself introduced: `deployment.test.ts` asserts both `01 §2` fingerprints — no
-custom errors for the voting logic, a single `getDegreeOfCoherence` — and it has always asserted
-them **against the package's ABI**. Those tests still run, now pointed at the imported ABI, so a
-package regenerated from `master` fails the build exactly as before. The canary did not go away;
-it moved from guarding a copy to guarding the import.
+ADR-0005 rests on one requirement: bind to the **deployed** ABI, never one compiled from `master`.
+That requirement is real and unchanged. What ADR-0005 got wrong is the conclusion that a package
+import must therefore be avoided — the package ships the deployed artifacts, not `master`. The proof
+is the test ADR-0005 itself introduced: `deployment.test.ts` asserts both deployed-versus-`master`
+fingerprints — no custom errors for the voting logic, a single `getDegreeOfCoherence` — and it has
+always asserted them **against the package's ABI**. Those tests still run, now pointed at the
+imported ABI, so a package regenerated from `master` fails the build exactly as before. The canary
+did not go away; it moved from guarding a copy to guarding the import.
 
-Addresses were never covered by a MUST at all. `01 §1` requires only that a *configured* kit
+Addresses were never covered by a MUST at all. The requirement was only that a *configured* kit
 address be verified as Classic or Gated and refused if Shutter — a constraint on verification, not
 on provenance. ADR-0005 bundled addresses into an argument whose every premise (`master` drift,
 regeneration, typing) is ABI-specific.

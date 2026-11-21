@@ -3,7 +3,7 @@ import { hashVote } from "./commitment.js";
 import { PERIODS, type Period } from "./deployment.js";
 import { err, type KlerosResult, ok } from "./result.js";
 
-/** The three write actions. Never inferred, never substituted (`03 §2`). */
+/** The three write actions. Never inferred, never substituted. */
 export type VoteAction = "commit" | "reveal" | "vote";
 
 /** The period each action requires. */
@@ -35,7 +35,7 @@ export type PreflightFacts = {
   courtId: bigint;
   period: Period;
   hiddenVotes: boolean;
-  /** `lastPeriodChange + timesPerPeriod[period]`, or null in `execution` (`01 §7`). */
+  /** `lastPeriodChange + timesPerPeriod[period]`, or null in `execution`. */
   deadline: bigint | null;
   /** `timesPerPeriod[period]`, the nominal window length. Null in `execution`. */
   periodDuration: bigint | null;
@@ -56,7 +56,7 @@ export type PreflightIntent = {
   voteIds: bigint[];
   /** Only meaningful for `reveal`: the commitment the local salt reproduces. */
   expectedCommitment?: Hex;
-  /** `01 §4`: re-committing is legal on chain but distorts `totalCommitted`. */
+  /** Re-committing is legal on chain but distorts `totalCommitted`. */
   allowRecommit?: boolean;
 };
 
@@ -81,7 +81,7 @@ export function deadlineFor(
 /**
  * Every rejection that can be decided from chain state, applied before a fee is
  * paid. Pure on purpose: this is the safety logic, and it should be exhaustively
- * testable without a network (`04 §3`).
+ * testable without a network.
  *
  * Deliberately not covered: a well-formed vote for the wrong choice. Nothing on
  * chain contradicts it. See ADR-0004.
@@ -134,7 +134,7 @@ export function checkPreflight(
     );
   }
 
-  // `01 §4`: the bound is inclusive, and 0 (refuse to arbitrate) is always valid.
+  // The bound is inclusive, and 0 (refuse to arbitrate) is always valid.
   if (intent.choice > facts.numberOfChoices) {
     return err(
       "CHOICE_OUT_OF_BOUNDS",
@@ -191,7 +191,7 @@ export function checkPreflight(
 
       if (intent.expectedCommitment && vote.commit !== intent.expectedCommitment) {
         // Converts an on-chain revert that costs a transaction into a local error
-        // that costs nothing and can name the likely cause (`02 §6`).
+        // that costs nothing and can name the likely cause.
         return err(
           "COMMITMENT_MISMATCH",
           `Derived commitment ${intent.expectedCommitment} does not match the stored commitment ` +

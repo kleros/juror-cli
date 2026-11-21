@@ -5,7 +5,7 @@ import { hashVote } from "./commitment.js";
 import { deriveSalt, type SaltInputs, saltInfo } from "./salt.js";
 import { canonicaliseVoteIds } from "./vote-ids.js";
 
-/** The fixed seed all vectors in `02 §9` are built on. */
+/** The fixed seed all salt vectors are built on. */
 const SEED = hexToBytes("0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
 
 const DK_LOWER = "0x70b464be85a547144c72485eba2577e5d3a45421" as const;
@@ -27,7 +27,7 @@ describe("vector S1", () => {
 
   it("builds the exact info string", () => {
     // Asserted separately from the salt: a test that only checks the salt cannot
-    // localise a regression in the string construction (`05 §1.2`).
+    // localise a regression in the string construction.
     expect(saltInfo(inputs())).toBe(expectedInfo);
   });
 

@@ -11,7 +11,7 @@ import { decodeRevert } from "../core/reverts.js";
 import { deriveSalt } from "../core/salt.js";
 
 /**
- * Fork tests against the real deployed bytecode (`05 §2`).
+ * Fork tests against the real deployed bytecode.
  *
  * Start a fork first:
  *   anvil --fork-url https://arb1.arbitrum.io/rpc --port 8546 --silent
@@ -20,7 +20,7 @@ import { deriveSalt } from "../core/salt.js";
  *
  * These run against the fork at whatever block it was started on, so they assert
  * only things that hold at every height. The full commit -> passPeriod -> reveal
- * cycle (`05 §5.3`) needs a dispute caught mid-commit-period, so it pins a
+ * cycle needs a dispute caught mid-commit-period, so it pins a
  * historical block and starts its own fork: see `acceptance.fork.test.ts`.
  */
 const RPC = process.env.KLEROS_FORK_RPC ?? "http://127.0.0.1:8546";
@@ -51,7 +51,7 @@ describe.skipIf(!reachable)("fork: the deployed dispute kit", () => {
     expect(onChain).toBe(hashVote(choice, salt));
   });
 
-  it("ignores the justification, exactly as `01 §3` records", async () => {
+  it("ignores the justification, as the deployed kit does", async () => {
     const [withText, without] = await Promise.all(
       ["hello", ""].map((justification) =>
         client.readContract({
@@ -67,7 +67,7 @@ describe.skipIf(!reachable)("fork: the deployed dispute kit", () => {
   it("reproduces vector S1 end to end, seed through to on-chain commitment", async () => {
     // The strongest single assertion available without a live dispute: the salt
     // this tool derives from a seed, hashed by the deployed contract itself,
-    // equals the commitment recorded in `02 §9`.
+    // equals the recorded commitment vector.
     const seed = hexToBytes("0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
     const salt = deriveSalt(seed, {
       chainId: ARBITRUM_ONE_CHAIN_ID,
@@ -88,7 +88,7 @@ describe.skipIf(!reachable)("fork: the deployed dispute kit", () => {
   });
 
   it("reverts with a require string, and we decode it to guidance", async () => {
-    // Confirms `01 §2` against production bytecode: the deployed implementation
+    // Confirmed against production bytecode: the deployed implementation
     // uses require strings, so `Error(string)` is the primary decoding path.
     let caught: unknown;
     try {

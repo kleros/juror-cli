@@ -3,7 +3,7 @@ import { hexToBytes, isHex, keccak256 } from "viem";
 import { err, type KlerosResult, ok } from "./result.js";
 
 /**
- * Seed derivation — ADR-0003, overriding `02 §2`.
+ * Seed derivation — ADR-0003.
  *
  * The seed is `keccak256(sign(SEED_MESSAGE))` and is never written to disk. One
  * secret exists, the signing key, and it is one the juror already has to back up.

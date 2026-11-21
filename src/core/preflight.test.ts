@@ -117,7 +117,7 @@ describe("checkPreflight — never substitute one action for another", () => {
 describe("checkPreflight — the irreversible hazards", () => {
   it("refuses to re-commit by default", () => {
     // Each castCommit adds to totalCommitted again; once it exceeds the votes
-    // actually held, areVotesAllCast can never become true (`01 §4`).
+    // actually held, areVotesAllCast can never become true.
     const votes = [
       { voteId: 0n, account: JUROR, commit: hashVote(1n, 7n), choice: 0n, voted: false },
     ];

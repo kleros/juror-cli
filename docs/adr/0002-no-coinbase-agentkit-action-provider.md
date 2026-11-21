@@ -1,14 +1,14 @@
 # No Coinbase AgentKit action provider
 
 Shipping this tool as a `@coinbase/agentkit` `ActionProvider` was the starting assumption. It was
-rejected: three of the specification's normative MUSTs are unreachable through the
-`ActionProvider` / `ViemWalletProvider` contract.
+rejected: three of the original (now retired) specification's normative MUSTs are unreachable
+through the `ActionProvider` / `ViemWalletProvider` contract.
 
 | Requirement | Why it is unreachable |
 | --- | --- |
-| `04 §3.1` — MUST `simulateContract` before every write | `ViemWalletProvider`'s `WalletClient` is `#private` with no getter. No `simulateContract`, no `writeContract`. |
-| `04 §3.5` — MUST pass `confirmations: 1`, an explicit `timeout`, and `onReplaced` | `waitForTransactionReceipt(txHash)` accepts only a hash and returns `any`. |
-| `03 §5`, `§6` — stable exit codes and structured JSON | `Action.invoke` returns `Promise<string>`; the in-repo convention is human-readable prose. |
+| MUST `simulateContract` before every write | `ViemWalletProvider`'s `WalletClient` is `#private` with no getter. No `simulateContract`, no `writeContract`. |
+| MUST pass `confirmations: 1`, an explicit `timeout`, and `onReplaced` | `waitForTransactionReceipt(txHash)` accepts only a hash and returns `any`. |
+| Stable exit codes and structured JSON | `Action.invoke` returns `Promise<string>`; the in-repo convention is human-readable prose. |
 
 Reaching them means escaping the abstraction via `getPublicClient()` / `toSigner()` for exactly the
 parts that matter most, which leaves a wrapper over viem and no abstraction.

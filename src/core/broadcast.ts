@@ -5,13 +5,13 @@ import { DISPUTE_KIT_ABI } from "./deployment.js";
 import { err, type KlerosResult, ok } from "./result.js";
 import { decodeRevert } from "./reverts.js";
 
-/** The gas buffer every bot in the Kleros repo uses (`04 §3.2`). */
+/** The gas buffer every bot in the Kleros repo uses. */
 const GAS_BUFFER_NUMERATOR = 150n;
 const GAS_BUFFER_DENOMINATOR = 100n;
 
 /**
  * A generous cap costs nothing: on Arbitrum the sender is charged the base fee
- * regardless of the cap, and tips are ignored entirely (`04 §1.2`). The cap only
+ * regardless of the cap, and tips are ignored entirely. The cap only
  * matters as protection against a base fee that has risen since estimation.
  */
 const MAX_FEE_MULTIPLIER = 3n;
@@ -66,7 +66,8 @@ export type BroadcastResult =
  * Simulate, price, and optionally send one state-changing call.
  *
  * Simulation is unconditional: it is an eth_call against current state, it costs
- * nothing, and it catches every condition in `01 §4` before a fee is paid (`04 §3.1`).
+ * nothing, and it catches every revert the call would hit against that state before
+ * a fee is paid.
  * It is necessary but not sufficient -- the period can advance between the
  * simulation and inclusion -- so a post-broadcast revert is reported as a normal
  * outcome rather than an internal error.
@@ -118,7 +119,7 @@ export async function simulateAndMaybeBroadcast(
   };
 
   if (balanceWei < estimatedFeeWei) {
-    // Discovered here rather than at broadcast time (`04 §1.1`).
+    // Discovered here rather than at broadcast time.
     return err(
       "INSUFFICIENT_BALANCE",
       `${account.address} holds ${formatEther(balanceWei)} ETH on Arbitrum One, below the ` +
@@ -145,7 +146,7 @@ export async function simulateAndMaybeBroadcast(
       args: call.args as never,
       gas,
       maxFeePerGas,
-      // Tips are ignored on Arbitrum; zero states that plainly (`04 §1.2`).
+      // Tips are ignored on Arbitrum; zero states that plainly.
       maxPriorityFeePerGas: 0n,
     });
   } catch (cause) {
@@ -157,7 +158,7 @@ export async function simulateAndMaybeBroadcast(
 
   if (receipt === "timeout") {
     // Not a failure: the CLI stopped watching. Retrying blindly risks a duplicate
-    // submission, and for castCommit a duplicate inflates totalCommitted (`04 §3.6`).
+    // submission, and for castCommit a duplicate inflates totalCommitted.
     return ok({ status: "unknown", broadcast: true, txHash, ...plan });
   }
 
@@ -187,7 +188,7 @@ export async function simulateAndMaybeBroadcast(
  * `waitForTransactionReceipt` with an independent deadline on top of its own.
  *
  * There are open reports of it never settling when a hash is never found, and of
- * polling handles outliving a timeout, so `04 §3.5` requires the caller to bound
+ * polling handles outliving a timeout, so the caller must bound
  * it and to guarantee the process exits. The race timer is unref'd for that reason.
  *
  * `confirmations` must be 1: one confirmation is the right notion of done on an L2

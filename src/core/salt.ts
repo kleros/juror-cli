@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import type { Address } from "viem";
 
 /**
- * Salt derivation — `02 §4`.
+ * Salt derivation.
  *
  * Bumping this tag is a breaking change: any commitment still in flight was made
  * with the old one and can only be revealed with the old one, so a future version
@@ -10,7 +10,7 @@ import type { Address } from "viem";
  *
  * It is a domain-separation tag, NOT the package name. The package was renamed to
  * `@kleros/juror-cli`; this string deliberately was not. Exclude it from any
- * find-and-replace of the old name. `salt.test.ts` pins it via the `02 §9` vectors.
+ * find-and-replace of the old name. `salt.test.ts` pins it via the salt vectors.
  */
 export const SALT_VERSION_TAG = "kleros-juror-cli/v1/salt";
 
@@ -26,7 +26,7 @@ export type SaltInputs = {
 
 /**
  * The exact string that is MAC'd. Exposed because a regression in its construction
- * is invisible if you only assert the resulting salt (`05 §1.2`).
+ * is invisible if you only assert the resulting salt.
  */
 export function saltInfo(inputs: SaltInputs): string {
   return [

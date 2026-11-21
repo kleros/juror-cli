@@ -30,13 +30,12 @@ import { deriveSalt } from "../core/salt.js";
 import { deriveSeedFromSigner } from "../core/seed.js";
 
 /**
- * The central acceptance criterion, `05 §5.3`: a commit followed by a reveal
+ * The central property this tool must hold: a commit followed by a reveal
  * succeeds on a fork with **no state carried between the two invocations**, and it
  * MUST be tested by running the two commands as separate processes.
  *
- * This tool carries even less than the spec allows for. `02 §2` assumes a seed
- * file; ADR-0003 replaced it with a seed derived from the signing key, and no
- * `commits.jsonl` is written either. So the only thing shared between the two
+ * There is no seed file: ADR-0003 replaced it with a seed derived from the signing
+ * key, and no `commits.jsonl` is written either. So the only thing shared between the two
  * processes below is the key file — and the assertions check that, rather than
  * assuming it.
  *
@@ -142,7 +141,7 @@ function startFork(): Promise<void> {
 /**
  * Hand the drawn juror's votes to the address this test holds the key for.
  *
- * `05 §2.2` says to impersonate the drawn juror, but impersonation only reaches
+ * The usual fork trick is to impersonate the drawn juror, but impersonation only reaches
  * `eth_sendTransaction`, and this CLI signs its own transactions with its own key
  * and refuses to act on votes that key does not own. So the fork is edited from the
  * other side: `Vote.account` is rewritten to the test address, and everything
@@ -209,7 +208,7 @@ type CliRun = { exitCode: number; stdout: string; stderr: string; json: Record<s
 
 /**
  * Run the CLI the way the consuming agent does: a fresh process, arguments only.
- * `05 §5.3` turns on this being a real process boundary, so nothing is imported and
+ * That property turns on a real process boundary, so nothing is imported and
  * called in-band. The environment is scrubbed of the variables that would otherwise
  * let a developer's shell decide the seed or the endpoint.
  */
@@ -239,157 +238,154 @@ function runCli(args: string[]): Promise<CliRun> {
   });
 }
 
-describe.skipIf(!ARCHIVE_RPC)(
-  "acceptance: commit then reveal, separate processes (`05 §5.3`)",
-  () => {
-    beforeAll(async () => {
-      await startFork();
+describe.skipIf(!ARCHIVE_RPC)("acceptance: commit then reveal, separate processes", () => {
+  beforeAll(async () => {
+    await startFork();
 
-      home = mkdtempSync(join(tmpdir(), "kleros-juror-acceptance-"));
-      writeFileSync(join(home, "key"), jurorKey, { mode: 0o600 });
+    home = mkdtempSync(join(tmpdir(), "kleros-juror-acceptance-"));
+    writeFileSync(join(home, "key"), jurorKey, { mode: 0o600 });
 
-      await reassignVotes(juror.address);
-      await testClient.setBalance({ address: juror.address, value: ONE_ETH });
-    }, 120_000);
+    await reassignVotes(juror.address);
+    await testClient.setBalance({ address: juror.address, value: ONE_ETH });
+  }, 120_000);
 
-    afterAll(() => {
-      anvil?.kill("SIGTERM");
-      if (home) rmSync(home, { recursive: true, force: true });
+  afterAll(() => {
+    anvil?.kill("SIGTERM");
+    if (home) rmSync(home, { recursive: true, force: true });
+  });
+
+  it("records the vote, with nothing carried between the two processes", async () => {
+    // The salt this run must produce, derived here so the assertions below can be
+    // about a known value rather than about whatever the CLI happened to print.
+    const seed = await deriveSeedFromSigner((message) => juror.signMessage({ message }));
+    if (!seed.success) throw new Error(seed.message);
+    const salt = deriveSalt(seed.data, {
+      chainId: ARBITRUM_ONE_CHAIN_ID,
+      disputeKit: kit.address,
+      dispute: DISPUTE,
+      round: ROUND,
+      voteIdsCsv: VOTE_IDS.join(","),
     });
+    const expectedCommitment = hashVote(CHOICE, salt);
 
-    it("records the vote, with nothing carried between the two processes", async () => {
-      // The salt this run must produce, derived here so the assertions below can be
-      // about a known value rather than about whatever the CLI happened to print.
-      const seed = await deriveSeedFromSigner((message) => juror.signMessage({ message }));
-      if (!seed.success) throw new Error(seed.message);
-      const salt = deriveSalt(seed.data, {
-        chainId: ARBITRUM_ONE_CHAIN_ID,
-        disputeKit: kit.address,
-        dispute: DISPUTE,
-        round: ROUND,
-        voteIdsCsv: VOTE_IDS.join(","),
-      });
-      const expectedCommitment = hashVote(CHOICE, salt);
+    // --- process 1: commit -------------------------------------------------
+    // Vote IDs deliberately unsorted and duplicated: the commitment goes on chain
+    // over the canonical array, and a lexicographic sort here would strand it.
+    const commit = await runCli([
+      "commit",
+      "--dispute",
+      DISPUTE.toString(),
+      "--round",
+      ROUND.toString(),
+      "--votes",
+      "4,2,2",
+      "--choice",
+      CHOICE.toString(),
+      "--broadcast",
+    ]);
 
-      // --- process 1: commit -------------------------------------------------
-      // Vote IDs deliberately unsorted and duplicated: the commitment goes on chain
-      // over the canonical array, and a lexicographic sort here would strand it.
-      const commit = await runCli([
-        "commit",
-        "--dispute",
-        DISPUTE.toString(),
-        "--round",
-        ROUND.toString(),
-        "--votes",
-        "4,2,2",
-        "--choice",
-        CHOICE.toString(),
-        "--broadcast",
-      ]);
+    expect(commit.exitCode).toBe(0);
+    expect(commit.json.ok).toBe(true);
+    expect(commit.json.status).toBe("mined");
+    expect(commit.json.votes).toEqual(["2", "4"]);
+    expect(commit.json.commit).toBe(expectedCommitment);
 
-      expect(commit.exitCode).toBe(0);
-      expect(commit.json.ok).toBe(true);
-      expect(commit.json.status).toBe("mined");
-      expect(commit.json.votes).toEqual(["2", "4"]);
-      expect(commit.json.commit).toBe(expectedCommitment);
+    // Publishing either of these during the commit period would undo the hiding
+    // the commitment exists to provide.
+    const secrets = [salt.toString(), toHex(salt), toHex(seed.data)];
+    for (const secret of secrets) {
+      expect(commit.stdout, "commit must not emit the salt or the seed").not.toContain(secret);
+      expect(commit.stderr).not.toContain(secret);
+    }
 
-      // `03 §6` and acceptance criterion 11: publishing either of these during the
-      // commit period would undo the hiding the commitment exists to provide.
-      const secrets = [salt.toString(), toHex(salt), toHex(seed.data)];
-      for (const secret of secrets) {
-        expect(commit.stdout, "commit must not emit the salt or the seed").not.toContain(secret);
-        expect(commit.stderr).not.toContain(secret);
-      }
-
-      for (const voteId of VOTE_IDS) {
-        const [, storedCommit] = await publicClient.readContract({
-          address: kit.address,
-          abi: DISPUTE_KIT_ABI,
-          functionName: "getVoteInfo",
-          args: [DISPUTE, ROUND, voteId],
-        });
-        expect(storedCommit).toBe(expectedCommitment);
-      }
-
-      // Acceptance criterion 4 is vacuous here and stronger for it: there is no
-      // `commits.jsonl` to delete, because nothing but the key is ever on disk.
-      expect(readdirSync(home)).toEqual(["key"]);
-
-      // --- the world moves on ------------------------------------------------
-      await testClient.increaseTime({ seconds: Number(COMMIT_PERIOD_SECONDS) + 1 });
-      await testClient.mine({ blocks: 1 });
-
-      const wallet = createWalletClient({
-        account: juror,
-        chain: arbitrum,
-        transport: http(FORK_RPC),
-      });
-      const passPeriod = await wallet.writeContract({
-        address: KLEROS_CORE.address,
-        abi: PASS_PERIOD_ABI,
-        functionName: "passPeriod",
-        args: [DISPUTE],
-      });
-      await publicClient.waitForTransactionReceipt({ hash: passPeriod });
-
-      const [, , period] = await publicClient.readContract({
-        address: KLEROS_CORE.address,
-        abi: KLEROS_CORE_ABI,
-        functionName: "disputes",
-        args: [DISPUTE],
-      });
-      expect(period, "the dispute must now be in the vote period").toBe(2);
-
-      // --- process 2: reveal -------------------------------------------------
-      // A different process, a different block, and a period boundary in between.
-      // The salt is not passed in and was never written down; it is re-derived from
-      // the key, which is the whole claim this test exists to check.
-      const reveal = await runCli([
-        "reveal",
-        "--dispute",
-        DISPUTE.toString(),
-        "--round",
-        ROUND.toString(),
-        "--votes",
-        "2,4",
-        "--choice",
-        CHOICE.toString(),
-        "--broadcast",
-      ]);
-
-      expect(reveal.exitCode).toBe(0);
-      expect(reveal.json.ok).toBe(true);
-      expect(reveal.json.status).toBe("mined");
-      expect(reveal.json.period).toBe("vote");
-      expect(reveal.json.commit).toBe(expectedCommitment);
-
-      for (const voteId of VOTE_IDS) {
-        const [account, , choice, voted] = await publicClient.readContract({
-          address: kit.address,
-          abi: DISPUTE_KIT_ABI,
-          functionName: "getVoteInfo",
-          args: [DISPUTE, ROUND, voteId],
-        });
-        expect(account).toBe(juror.address);
-        expect(voted, `vote ${voteId} must be recorded`).toBe(true);
-        expect(choice).toBe(CHOICE);
-      }
-
-      const [, , totalVoted, , , choiceCount] = await publicClient.readContract({
+    for (const voteId of VOTE_IDS) {
+      const [, storedCommit] = await publicClient.readContract({
         address: kit.address,
         abi: DISPUTE_KIT_ABI,
-        functionName: "getRoundInfo",
-        args: [DISPUTE, ROUND, CHOICE],
+        functionName: "getVoteInfo",
+        args: [DISPUTE, ROUND, voteId],
       });
-      expect(totalVoted).toBe(BigInt(VOTE_IDS.length));
-      expect(choiceCount).toBe(BigInt(VOTE_IDS.length));
+      expect(storedCommit).toBe(expectedCommitment);
+    }
 
-      expect(readdirSync(home)).toEqual(["key"]);
-    }, 180_000);
-  },
-);
+    // "Delete the audit log and reveal anyway" is vacuous here: there is no
+    // `commits.jsonl` to delete, because nothing but the key is ever on disk.
+    expect(readdirSync(home)).toEqual(["key"]);
+
+    // --- the world moves on ------------------------------------------------
+    await testClient.increaseTime({ seconds: Number(COMMIT_PERIOD_SECONDS) + 1 });
+    await testClient.mine({ blocks: 1 });
+
+    const wallet = createWalletClient({
+      account: juror,
+      chain: arbitrum,
+      transport: http(FORK_RPC),
+    });
+    const passPeriod = await wallet.writeContract({
+      address: KLEROS_CORE.address,
+      abi: PASS_PERIOD_ABI,
+      functionName: "passPeriod",
+      args: [DISPUTE],
+    });
+    await publicClient.waitForTransactionReceipt({ hash: passPeriod });
+
+    const [, , period] = await publicClient.readContract({
+      address: KLEROS_CORE.address,
+      abi: KLEROS_CORE_ABI,
+      functionName: "disputes",
+      args: [DISPUTE],
+    });
+    expect(period, "the dispute must now be in the vote period").toBe(2);
+
+    // --- process 2: reveal -------------------------------------------------
+    // A different process, a different block, and a period boundary in between.
+    // The salt is not passed in and was never written down; it is re-derived from
+    // the key, which is the whole claim this test exists to check.
+    const reveal = await runCli([
+      "reveal",
+      "--dispute",
+      DISPUTE.toString(),
+      "--round",
+      ROUND.toString(),
+      "--votes",
+      "2,4",
+      "--choice",
+      CHOICE.toString(),
+      "--broadcast",
+    ]);
+
+    expect(reveal.exitCode).toBe(0);
+    expect(reveal.json.ok).toBe(true);
+    expect(reveal.json.status).toBe("mined");
+    expect(reveal.json.period).toBe("vote");
+    expect(reveal.json.commit).toBe(expectedCommitment);
+
+    for (const voteId of VOTE_IDS) {
+      const [account, , choice, voted] = await publicClient.readContract({
+        address: kit.address,
+        abi: DISPUTE_KIT_ABI,
+        functionName: "getVoteInfo",
+        args: [DISPUTE, ROUND, voteId],
+      });
+      expect(account).toBe(juror.address);
+      expect(voted, `vote ${voteId} must be recorded`).toBe(true);
+      expect(choice).toBe(CHOICE);
+    }
+
+    const [, , totalVoted, , , choiceCount] = await publicClient.readContract({
+      address: kit.address,
+      abi: DISPUTE_KIT_ABI,
+      functionName: "getRoundInfo",
+      args: [DISPUTE, ROUND, CHOICE],
+    });
+    expect(totalVoted).toBe(BigInt(VOTE_IDS.length));
+    expect(choiceCount).toBe(BigInt(VOTE_IDS.length));
+
+    expect(readdirSync(home)).toEqual(["key"]);
+  }, 180_000);
+});
 
 if (!ARCHIVE_RPC) {
   // Visible in the run output rather than silently green.
-  console.warn("[acceptance] KLEROS_ARCHIVE_RPC is unset; `05 §5.3` was not exercised.");
+  console.warn("[acceptance] KLEROS_ARCHIVE_RPC is unset; commit -> reveal was not exercised.");
 }

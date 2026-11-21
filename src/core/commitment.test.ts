@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { hashVote, isEmptyCommitment } from "./commitment.js";
 
 /**
- * Bare hash vectors from `02 §9`, every one of them confirmed by live eth_call to
+ * Bare hash vectors, every one of them confirmed by live eth_call to
  * DisputeKitClassicNeo on Arbitrum One. These bind the implementation to production
  * behaviour rather than to source.
  */
@@ -28,10 +28,10 @@ describe("hashVote", () => {
   });
 
   it("coincides with abi.encode here, and that is expected", () => {
-    // `05 §1.1` asks for an assertion that abi.encode differs. It does not, and
-    // cannot: `01 §3` explains that the two encodings are indistinguishable when
-    // both arguments are fixed-width uint256. The property worth pinning is the
-    // 64-byte layout above, not a difference that does not exist.
+    // One might expect abi.encode to differ. It does not, and cannot: the two
+    // encodings are indistinguishable when both arguments are fixed-width uint256.
+    // The property worth pinning is the 64-byte layout above, not a difference that
+    // does not exist.
     const abiEncoded = keccak256(
       encodeAbiParameters(parseAbiParameters("uint256, uint256"), [1n, 0n]),
     );

@@ -331,11 +331,6 @@ stays a **devDependency** and adds nothing to your install.
 | [`docs/adr/`](docs/adr/) | Five decisions a reader would otherwise question, with the options rejected |
 | [`CLAUDE.md`](CLAUDE.md) | Working agreement and invariants, for agents contributing to the repo |
 
-The normative specification lives outside this repository, in the `kleros-v2` docs; a gitignored
-symlink at `docs/research/` points at it on a developer machine and is simply absent in a fresh
-clone. Every invariant that depends on it is restated in `CLAUDE.md` so nothing important is only
-reachable through a dangling link.
-
 ## Roadmap
 
 - [x] `vote` — the single-transaction path for courts without hidden votes

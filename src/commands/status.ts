@@ -19,7 +19,7 @@ export type LocalOptions = Pick<
  * Read-only view of where a dispute stands and what this juror still owes it.
  *
  * `actionRequired` is derived here from chain state rather than taken from an
- * upstream hint -- the same reason pre-flight re-derives it (`03 §2`).
+ * upstream hint -- the same reason pre-flight re-derives it.
  */
 export async function runStatus(
   options: Omit<PrepareOptions, "requireSigner">,
@@ -95,7 +95,7 @@ export async function runSalt(
     round: local.data.round.toString(),
     votes: local.data.voteIds.ids.map(String),
     choice: choice.toString(),
-    // Permitted in `salt` output, unlike `commit` output, per `03 §6`.
+    // Permitted in `salt` output, unlike `commit` output, where it would defeat the hiding.
     salt: `0x${salt.data.toString(16).padStart(64, "0")}`,
     commit: hashVote(choice, salt.data),
   });

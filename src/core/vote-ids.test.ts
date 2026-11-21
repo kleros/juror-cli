@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canonicaliseVoteIds } from "./vote-ids.js";
 
-/** Properties required by `05 §1.3`. */
+/** Properties every canonicalisation must hold. */
 describe("canonicaliseVoteIds", () => {
   const csv = (input: Parameters<typeof canonicaliseVoteIds>[0]): string => {
     const result = canonicaliseVoteIds(input);
@@ -23,7 +23,7 @@ describe("canonicaliseVoteIds", () => {
   });
 
   it("is invariant under duplication", () => {
-    // Vector S2 from `02 §9`.
+    // Vector S2.
     expect(csv("7,5,6,5")).toBe("5,6,7");
   });
 
@@ -62,7 +62,7 @@ describe("canonicaliseVoteIds", () => {
   });
 
   it("rejects an empty list", () => {
-    // castCommit accepts an empty array and silently does nothing (`01 §4`).
+    // castCommit accepts an empty array and silently does nothing.
     for (const input of ["", []] as const) {
       const result = canonicaliseVoteIds(input);
       expect(result.success).toBe(false);

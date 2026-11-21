@@ -10,9 +10,9 @@ import { err, type KlerosResult, ok } from "./result.js";
 
 /**
  * The deployed surface on Arbitrum One, taken from `@kleros/kleros-v2-contracts`
- * rather than hand-copied out of `01 §1` and `01 §3`.
+ * rather than hand-copied.
  *
- * `01 §2` requires binding to the *deployed* ABI and forbids one compiled from
+ * This tool must bind to the *deployed* ABI, never one compiled from
  * `master` — the deployed kit reverts with `require` strings and exposes a single
  * `getDegreeOfCoherence`. The package satisfies that: `deployment.test.ts` asserts
  * both of those fingerprints against the ABI imported here, so a package
@@ -33,8 +33,8 @@ export const KLEROS_CORE = {
 } as const satisfies { address: Address };
 
 /**
- * The deployed ABIs. Classic and Gated share a voting ABI and hash function
- * (`01 §1`), which `deployment.test.ts` asserts, so one kit ABI covers both.
+ * The deployed ABIs. Classic and Gated share a voting ABI and hash function,
+ * which `deployment.test.ts` asserts, so one kit ABI covers both.
  */
 export const KLEROS_CORE_ABI = mainnetViem.klerosCoreAbi;
 export const DISPUTE_KIT_ABI = mainnetViem.disputeKitClassicAbi;
@@ -42,8 +42,8 @@ export const DISPUTE_KIT_ABI = mainnetViem.disputeKitClassicAbi;
 /**
  * Kits whose voting ABI and hash function this tool understands.
  *
- * The versions stay local: they are per-kit (`01 §1` says a single expected value
- * MUST NOT be assumed) and the package carries no version field.
+ * The versions stay local: they are per-kit (a single expected value
+ * must not be assumed) and the package carries no version field.
  */
 export const ACCEPTED_DISPUTE_KITS = {
   classic: {
@@ -56,7 +56,7 @@ export const ACCEPTED_DISPUTE_KITS = {
   },
 } as const satisfies Record<string, { address: Address; expectedVersion: string }>;
 
-/** A different hidden-vote scheme with different cryptography. Refused by name (`00`). */
+/** A different hidden-vote scheme with different cryptography. Refused by name. */
 export const SHUTTER_DISPUTE_KITS = {
   shutter: getDeployedAddress(mainnetViem.disputeKitShutterConfig, ARBITRUM_ONE_CHAIN_ID),
   gatedShutter: getDeployedAddress(mainnetViem.disputeKitGatedShutterConfig, ARBITRUM_ONE_CHAIN_ID),
@@ -135,7 +135,7 @@ export function resolveDisputeKit(input: string): KlerosResult<ResolvedDisputeKi
  * `isShutter` / `isGated` classification. That is a bounded query — four events on
  * Arbitrum One — but a fork does not backfill logs and some providers cap ranges,
  * so an empty or failed result falls back to `getDisputeKitsLength` / `disputeKits`,
- * which are plain `eth_call`s listed in `01 §7`.
+ * which are plain `eth_call`s.
  */
 async function fetchKitRegistry(client: PublicClient): Promise<Map<Address, string>> {
   const byAddress = new Map<Address, string>();
@@ -204,6 +204,6 @@ export async function identifyDisputeKit(
   return ok({ ...resolved, disputeKitId: String(disputeKitId) });
 }
 
-/** `Period` enum, `01 §6`. Indexes `timesPerPeriod` for 0..3. */
+/** `Period` enum. Indexes `timesPerPeriod` for 0..3. */
 export const PERIODS = ["evidence", "commit", "vote", "appeal", "execution"] as const;
 export type Period = (typeof PERIODS)[number];

@@ -20,7 +20,7 @@ export type WriteOptions = Omit<PrepareOptions, "requireSigner" | "address"> & {
 export type CommitOptions = WriteOptions & { allowRecommit: boolean };
 export type RevealOptions = WriteOptions & { justification: string };
 
-/** `02 §11`: the web frontend enforces this client-side; the contract enforces nothing. */
+/** The web frontend enforces this client-side; the contract enforces nothing. */
 const SUGGESTED_JUSTIFICATION_LENGTH = 100;
 
 /**
@@ -28,7 +28,7 @@ const SUGGESTED_JUSTIFICATION_LENGTH = 100;
  *
  * The salt is derived, used, and discarded. It is never written to disk and never
  * appears in this command's output: printing it during the commit period would
- * defeat the hiding the commitment exists to provide (`03 §6`).
+ * defeat the hiding the commitment exists to provide.
  */
 export async function runCommit(
   options: CommitOptions,
@@ -87,7 +87,7 @@ export async function runCommit(
  * The salt is recomputed from the key, never read back from anywhere. The derived
  * commitment is compared against the stored one before simulating, which turns an
  * on-chain revert that costs a transaction into a local error that costs nothing
- * and can name the likely cause (`02 §6`).
+ * and can name the likely cause.
  */
 export async function runReveal(
   options: RevealOptions,
@@ -193,7 +193,7 @@ function envelope(
   };
 }
 
-/** A literal string, `@path` to read a file, or `-` to read stdin (`03 §4`). */
+/** A literal string, `@path` to read a file, or `-` to read stdin. */
 export function resolveJustification(input: string): KlerosResult<string> {
   try {
     if (input === "-") return ok(readFileSync(0, "utf8"));

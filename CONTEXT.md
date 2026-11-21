@@ -34,7 +34,8 @@ The arbitrator's *output*: the winning choice `KlerosCore` reports through `curr
 `Ruling` event, and `IArbitrableV2.rule`. Jurors supply choices; the dispute kit aggregates them
 into a winning choice, and only that becomes the ruling. A juror never casts one, and this tool
 never produces one — it is an input away from the end of the pipeline, not the end of it.
-`docs/research/00 §116` calls a choice "the ruling option"; this glossary deliberately overrides it.
+Elsewhere a choice is sometimes called "the ruling option"; this glossary deliberately overrides
+that.
 _Avoid_: using it for `--choice`, or for anything a single juror does
 
 **Salt**:

@@ -58,7 +58,7 @@ describe("the deployed ABI still has the shape this tool calls", () => {
     "getTimesPerPeriod(uint96) -> (uint256[4] timesPerPeriod)",
     "getNumberOfRounds(uint256) -> (uint256)",
     "version() -> (string)",
-    // Both used by the no-logs fallback in `identifyDisputeKit` (`01 §7`).
+    // Both used by the no-logs fallback in `identifyDisputeKit`.
     "disputeKits(uint256) -> (address)",
     "getDisputeKitsLength() -> (uint256)",
   ])("KlerosCore.%s", (expected) => {
@@ -88,7 +88,7 @@ describe("the deployed ABI still has the shape this tool calls", () => {
  * one -- it is that an upstream regeneration moves one under us. Salt derivation folds
  * in the dispute kit address (`salt.ts`), so a changed address makes every commitment
  * still in flight unrevealable. These literals exist to detect that, and nothing reads
- * them; do not "fix" a failure here by updating them without reading `02 §4` first.
+ * them; do not "fix" a failure here by updating them without reading `salt.ts` first.
  */
 describe("addresses have not moved (in-flight commitments depend on it)", () => {
   it.each([
@@ -114,12 +114,12 @@ describe("addresses have not moved (in-flight commitments depend on it)", () => 
   });
 });
 
-/** The two fingerprints from `01 §2` that distinguish the deployment from `master`. */
+/** The two fingerprints that distinguish the deployment from `master`. */
 describe("deployed-versus-master fingerprints", () => {
   it("declares no custom errors for the voting logic", () => {
     // The deployed implementation reverts with require strings. If custom errors
     // appear here, the package has been regenerated from master and the revert
-    // decoding assumed by `04 §5` no longer describes production.
+    // decoding in `reverts.ts` no longer describes production.
     const proxyLevel = new Set([
       "AlreadyInitialized",
       "FailedDelegateCall",
@@ -141,7 +141,7 @@ describe("deployed-versus-master fingerprints", () => {
 });
 
 describe("Classic and Gated share the voting ABI", () => {
-  // Why the two kits can be treated with one ABI (`01 §1`).
+  // Why the two kits can be treated with one ABI.
   it.each(["castCommit", "castVote", "hashVote", "getVoteInfo"])("%s", async (name) => {
     const { mainnetViem } = await import("@kleros/kleros-v2-contracts/cjs/deployments");
     const gated = mainnetViem.disputeKitGatedAbi as readonly AbiEntry[];
@@ -192,7 +192,7 @@ describe("resolveDisputeKit", () => {
  * The fallback matters more than it looks: it is what keeps `commit` and `reveal`
  * working inside a 1800-second window against a provider that caps log ranges. It is
  * driven here by a transport that refuses `eth_getLogs` and answers only the two
- * `01 §7` reads, so the test needs no network.
+ * fallback reads, so the test needs no network.
  */
 describe("identifyDisputeKit falls back to eth_call when the log query fails", () => {
   const registry: Record<number, string> = {

@@ -193,8 +193,8 @@ export async function readPreflightFacts(
 }
 
 /**
- * `03 §9.3`: warn rather than fail. The version guards the revert encoding assumed
- * by `04 §5`, and a mismatch means decoding may degrade -- not that voting is unsafe.
+ * Warn rather than fail. The version guards the revert encoding assumed
+ * by `reverts.ts`, and a mismatch means decoding may degrade -- not that voting is unsafe.
  */
 export function versionWarning(facts: PreflightFacts): string | null {
   if (facts.disputeKitVersion === facts.expectedDisputeKitVersion) return null;

@@ -11,7 +11,7 @@ export const DEFAULT_RPC_URLS = ["https://arb1.arbitrum.io/rpc"] as const;
  *
  * `fallback` retries the next endpoint on transport failure, which covers the
  * most likely "stuck" cause on this chain: an endpoint that accepted a request
- * and did not forward it (`04 §2`). It is not a substitute for the chain check
+ * and did not forward it. It is not a substitute for the chain check
  * below -- a fallback list pointed at the wrong network would still be wrong.
  */
 export function createKlerosClient(rpcUrls: readonly string[] = DEFAULT_RPC_URLS): PublicClient {
@@ -33,7 +33,7 @@ export function parseRpcUrls(value: string | undefined): string[] {
 }
 
 /**
- * `03 §9.1`. Every address, ABI fragment and salt in this tool is specific to
+ * Every address, ABI fragment and salt in this tool is specific to
  * chain 42161; on any other chain they are meaningless rather than merely wrong.
  */
 export async function assertArbitrumOne(client: PublicClient): Promise<KlerosResult<number>> {

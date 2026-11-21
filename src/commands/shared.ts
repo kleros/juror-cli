@@ -17,7 +17,7 @@ import { keyFilePath, loadSigner, resolveHome } from "../core/signer.js";
 import { type CanonicalVoteIds, canonicaliseVoteIds } from "../core/vote-ids.js";
 
 /**
- * Exit codes are stable for shell callers (`03 §5`), but they are not the machine
+ * Exit codes are stable for shell callers, but they are not the machine
  * contract: the agent consuming this sees an effectively binary exit status, so the
  * `code` field in the payload is what it must branch on. See CLAUDE.md.
  */
@@ -232,14 +232,14 @@ export async function prepare(options: PrepareOptions): Promise<KlerosResult<Pre
   });
 }
 
-/** `04 §4`: the nominal deadline is an upper bound, not an entitlement. */
+/** The nominal deadline is an upper bound, not an entitlement. */
 export function deadlineWarnings(facts: PreflightFacts): string[] {
   const warnings: string[] = [];
   if (facts.deadline === null) return warnings;
 
   const remaining = facts.deadline - facts.now;
   const duration = facts.periodDuration;
-  // `04 §4`: warn under 10% of the window, or under two minutes, whichever bites first.
+  // Warn under 10% of the window, or under two minutes, whichever bites first.
   const nearlyOver = remaining < 120n || (duration !== null && remaining * 10n < duration);
   if (remaining > 0n && nearlyOver) {
     warnings.push(`Only ${remaining} seconds remain in the ${facts.period} period.`);

@@ -1,7 +1,7 @@
 import { err, type KlerosResult, ok } from "./result.js";
 
 /**
- * Canonical vote IDs — `02 §3`.
+ * Canonical vote IDs.
  *
  * Applying this in one command and not another is the single most likely way to
  * build a tool that commits successfully and then cannot reveal. The canonical
@@ -46,7 +46,7 @@ export function canonicaliseVoteIds(input: VoteIdInput): KlerosResult<CanonicalV
   const ids = [...new Set(parsed)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
   if (ids.length === 0) {
-    // `castCommit` accepts an empty array and silently does nothing (`01 §4`),
+    // `castCommit` accepts an empty array and silently does nothing,
     // so this has to be caught here or it costs a transaction for no vote.
     return err("EMPTY_VOTE_IDS", "At least one vote ID is required.");
   }
