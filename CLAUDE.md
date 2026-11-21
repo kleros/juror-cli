@@ -123,10 +123,12 @@ document). `docs/research/` **governs**; the PRD is obsolete and anything else i
 
 ## Agent skills
 
-### Issue tracker
-
-Issues live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The five canonical triage roles, each label string equal to its name. See `docs/agents/triage-labels.md`.
+- **Issue tracker** — GitHub Issues on `kleros/juror-cli`, which is **public**: an exploitable
+  finding goes in a draft security advisory, never an issue. See `docs/agents/issue-tracker.md`.
+- **`.scratch/` is history, not a tracker** — the features filed before GitHub Issues. Migrated
+  issues link back to those files by path, so never move, migrate or delete them, and file nothing
+  new there.
+- **Triage labels** — the five canonical roles, each label string equal to its name. See
+  `docs/agents/triage-labels.md`.
+- **Domain docs** — single-context: `CONTEXT.md` is the glossary (skills that say `GLOSSARY.md`
+  mean it) and `docs/adr/` the decisions. See `docs/agents/domain.md`.
